@@ -156,15 +156,13 @@ mets <- function(pred) {
   return(metrics_vote)
 }
 
-t1<-tibble(algo="",party="",.metric="",.estimator="",.estimate=0.0)[0,]
+t1<-tibble(algo="",party="",metric="",estimator="",estimate=0.0)[0,]
 for(m in mods) {
   out <- mets(pred(m))
   t1<- rbind(t1,out)
 }
 
 show(t1)
-
-
 
 #######################################################
 ##### now fitting models to vote share, history and polling
