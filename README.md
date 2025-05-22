@@ -1,2 +1,3 @@
 # election_forecast
-Forecasting election results using historical results and publicly available data
+Forecasting/retrocasting election results using historical results and
+publicly available data. Results shown at https://github.com/MarkCWilson/election_forecast.
