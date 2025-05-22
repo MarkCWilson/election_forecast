@@ -105,22 +105,39 @@ data altogether. How well can we predict the 2020 results just from the
 elections in 2000-2016? The answer may be surprising for those more
 used to forecasting in other countries.
 
-The correlation between D or R vote share in 2020 and in 2016 is more
-than 0.86. When we use a simple linear regression where 2000-2016 is the
-training data  and 2020 is the test data, the results are pretty good:
-linear regression for D vote share (with the only predictors being the D
-and R vote shares in previous elections in that county) has RMSE 0.0384
-and R^2 = 0.968, with very similar results for the regression for R vote
-share.
+The correlation between D or R vote share in 2020 and in 2016 is 0.869.
+When we use a simple linear regression (pure lasso model) where
+2000-2016 is the training data  and 2020 is the test data, the results
+are pretty good: linear regression for D vote share (with the only
+predictors being the D and R vote shares in previous elections in that
+county) has RMSE 0.0384 and R^2 = 0.967, with slightly better results
+for the regression (RMSE 0.0251, R^2 = 0.969) for R vote share.
 
 <p>
-However, there is no reason to suspect that linear regression is the
-right tool here. 
-Training a random forest algorithm on 2000-2016 yields clearly better
-results. In particular the error in vote share approximation is much
-lower, with RMSE around 0.02. 
-However, XGBoost was no better than linear regression.
+There is no reason to suspect that linear regression is the right tool
+here. However, training a random forest or XGBoost implementation in R
+on the same data yields only small improvements (RMSE still at least
+0.0217 in all cases).
 
+<p>
+Moving on to incorporate polling data, we are faced with the fact that
+most polls are national. The standard way to downscale changes in
+national vote shares to a smaller district such as a county is to use a
+"swing model". The most popular is uniform swing: if we add 5% to a
+party's overall vote share then we simply impute a 5% increase to it in
+each county. This obviously can't be correct in general (see <a
+href="https://journals.sagepub.com/doi/pdf/10.1177/09516298221123263?
+casa_token=2_nzwWr-l3MAAAAA:
+QeRch5_K2wStttMKY3VS42o3IkccU157ISQ64vQ_6BbToIkul59kHn8N7bltph6O0laYSpYe
+m-NC"> my paper with Bernie Grofman</a>) but seems fairly good in
+practice. In the paper we suggest a piecewise linear model, which 
+treats positive and negative swings differently, and which has  better
+theoretical behavior. They give very similar results on this dataset
+(correlation of 0.995) so we use the piecewise swing only. Simply using
+the county-level predictions derived from the swing model gives a
+correlation with the true 2020 result of 0.904. Training on all data
+2000-2016 yields RMSE 0.0269 and R^2 = 0.973 for D vote share with random forest, with
+larger RMSE (0.0335) for R vote share.
 
 <hr>
 

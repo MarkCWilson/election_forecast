@@ -44,14 +44,13 @@ test_data <- tempt %>% filter(year==2020)
 # make recipe
 vote_rec_dem <- 
   recipe(demfrac ~ ., data = train_data) %>% 
-  update_role(year,fips,repfrac,othfrac,new_role = "ID") %>% 
+  update_role(year,fips,repfrac,new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
-
 vote_rec_rep <- 
   recipe(repfrac ~ ., data = train_data) %>% 
-  update_role(year,fips,demfrac,othfrac,new_role = "ID") %>% 
+  update_role(year,fips,demfrac,new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
@@ -221,15 +220,15 @@ test_data <- temp2t %>% filter(year==2020)
 # make recipe
 vote_rec_dem <- 
   recipe(demfrac ~ ., data = train_data) %>% 
-  update_role(year, fips, win, lagwin, repfrac, othfrac, lagDfrac,lagRfrac,lagOfrac,swingD, 
-              pollswingD, predpollDfrac, predpollDfrac2, new_role = "ID") %>% 
+  update_role(year, fips, win, lagwin, repfrac, othfrac, swingD, predpollDfrac, 
+              predpollRfrac, new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
 vote_rec_rep <- 
   recipe(repfrac ~ ., data = train_data) %>% 
-  update_role(year, fips, win, lagwin, demfrac, othfrac, lagDfrac,lagRfrac,lagOfrac,swingD, 
-              pollswingD, predpollDfrac, predpollDfrac2, new_role = "ID") %>% 
+  update_role(year, fips, win, lagwin, demfrac, othfrac, swingD, predpollRfrac, 
+              predpollDfrac, new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
