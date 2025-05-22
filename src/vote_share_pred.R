@@ -232,63 +232,10 @@ vote_rec_rep <-
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
-process <- function(m) {
-  
-  # make workflow
-  vote_wf_dem <- 
-    workflow() %>% 
-    add_model(mod(m)) %>% 
-    add_recipe(vote_rec_dem)
-  
-  vote_wf_rep <- 
-    workflow() %>% 
-    add_model(mod(m)) %>% 
-    add_recipe(vote_rec_rep)
-  
-  # fit model on training data
-  vote_fit_dem <- 
-    vote_wf_dem %>% 
-    fit(data = train_data)
-  
-  vote_fit_rep <- 
-    vote_wf_rep %>% 
-    fit(data = train_data)
-  
-  #  vote_fit_dem %>% 
-  #    extract_fit_parsnip() %>% 
-  #    tidy() 
-  
-  # predict and evaluate
-  vote_aug_dem <- 
-    augment(vote_fit_dem, test_data)
-  vote_aug_rep <- 
-    augment(vote_fit_rep, test_data)
-  vote_pred <- inner_join(vote_aug_dem,vote_aug_rep, 
-                          by = join_by(year, demfrac,repfrac,othfrac,fips, lagDfrac, 
-                                       lagRfrac)) %>% 
-    mutate(predD = .pred.x,predR = .pred.y) %>%
-    select(year,fips,predD,predR,demfrac,repfrac)
-  
-  mets <- metric_set(rsq, rmse, mae, smape)
-  algo <- rep(m, each = 8) # how to do generally with number of metrics?
-  
-  results_vote_dem <- vote_pred %>% mets(demfrac, estimate = predD)
-  results_vote_rep <- vote_pred %>% mets(repfrac, estimate = predR)
-  
-  metrics_vote <- cbind(algo,party,rbind(results_vote_dem, results_vote_rep))
-  metrics_vote <-as_tibble(metrics_vote)
-  #show(metrics_vote)
-  
-  p_dem <- ggplot(vote_aug_dem, aes(y = demfrac, x = .pred)) + geom_point(color = "blue")
-  p_rep <- ggplot(vote_aug_rep, aes(y = repfrac, x = .pred)) + geom_point(color = "red")
-  show(p_dem)
-  show(p_rep) # present these better
-  return(metrics_vote)
-}
-
+ 
 t2<-tibble(algo="",party="",.metric="",.estimator="",.estimate=0.0)[0,]
 for(m in mods) {
-  out <- process(m)
+  out <- mets(pred(m))
   t2<- rbind(t2,out)
 }
 

@@ -149,16 +149,18 @@ turnout in 2020, which of course we don't know when making a real
 prediction. Another option is to assume turnout percentages are constant
 over counties, and use county population data or data on registered
 voters. Finding county-level information on turnout will be harder, and
-will likely involved checking state by state. However, we know that at
+will likely involved checking state by state - I have not yet found a curated source 
+online. However, we know that at
 the state level, turnout can vary from under 50% in some states to more
-like 75% in others, so this seems a suboptimal method. More
+like 75% in others, but I have no information on how it may vary inside a 
+state. More
 sophisticated turnout models can also be tried, based on modeling, which
 will be a whole other project. There is plenty to do in future!
 <p> 
-Using the actual turnout numbers, the best-performing vote share
-predictor, namely RF, is correct on all states (plus DC) except Georgia
-and Florida (so predicted a bigger win to D than in fact occurred). The
-others were wrong on 4 states.
+Using the actual turnout numbers, linear regression and XGBoost were 
+correct on all states (plus DC) except Georgia
+and Florida (so predicted a bigger win to D than in fact occurred), while 
+RF was wrong also on Pennsylvania.
 
 <hr>
 <h2> Possible improvements and extensions </h2>
