@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>US Presidential election forecasting</title>
+	<meta name="generator" content="BBEdit 15.1">
+	<style>
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+</head>
+<body>
+
+<h1>US Presidential election forecasting</h1>
+Election forecasting is a popular activity. There are many models, some
+of which look only at polling data, while others incorporate data on
+``fundamentals" such as inflation and unemployment rates. One problem in
+evaluation and production of forecasts is that high-stakes elections are
+relatively rare, so getting enough data can be tricky.
+<p>
+This project will evolve as I get more time to work on it, and the key
+data and code can be found on <a
+href="https://www.github.com/MarkCWilson">Github</a>. All the code is in
+R, consistently using the tidyverse and tidymodels approach. As a start,
+I will consider the first type of model, using only historical
+information on voting in US Presidential elections, plus a single
+polling average. As time permits, I intend to refine the analyses, and 
+apply the methodology to countries outside the US.
+<hr>
+
+<h2> Data </h2>
+There are many choices to be made. Much data on US elections is available 
+(I got some from
+the <a href="https://electionlab.mit.edu/data">MIT Elections
+Project</a>) in order to save harvesting from 51 individual websites).
+ For polling data, I used individual years from Wikipedia and <a
+href="https://www.realclearpolling.com/polls/president/general/2020/
+trump-vs-biden">RealClearPolitics</a> to get either the final Gallup
+poll or the RCP polling average as late as possible before Election Day.
+<p>
+I settled on county-level data, for which MIT provides data from 2000 to 2020
+inclusive. Counties have no particular electoral
+significance, but they are a subdivision of a state whose boundaries
+rarely change (unlike congressional districts), and there are over 3000
+of them in the US, which will give us a decent number of data points.
+Counties have a great variation in size: Los Angeles County has over 10
+million people, while some counties have around 200000. Each county is
+identified by a unique FIPS code, widely used for geographic units. For
+example, Los Angeles County is 06037. The 06 is for California, and each
+county has a 3-digit code.
+<p>
+Despite the overall high quality of the data, some data cleaning is needed.  I
+need to let them know at MIT that the famous Bush-Gore Florida 2000
+results are wrong, for example. Preliminary analysis as below revealed
+some strange results, which I tracked down to the fact that some
+counties had changed names and FIPS codes. Also, there is something
+weird about Kansas City, which intersects several counties and has a
+strange FIPS code 2938000, so I deleted that data entirely for now. 
+<p> The CSV is not in the tidy data format, but rather in "wide" format. For example, 
+the first row looks like
+
+<table>
+<tr> <td>2000</td> <td>ALABAMA</td>  <td>AL</td>  <td>AUTAUGA <td>1001</td>  <td>US</td> 
+ <td>PRESIDENT </td> <td>AL GORE</td> <td>  DEMOCRAT</td> <td>  4942</td> 
+ </tr>
+ <tr>
+ <td>2000</td> <td>ALABAMA</td>  <td>AL</td>  <td>AUTAUGA <td>1001</td>  <td>US</td> 
+ <td>PRESIDENT </td> <td>GEORGE W. BUSH </td><td>REPUBLICAN </td> <td>11993</td>
+ </tr>
+ </table>
+while we really want a column for Democrat and another for Republican votes. This is 
+easily fixed via the tidyr function  pivot_wider.
+<hr>
+
+<h2> Exploring the data</h2>
+First, let's look at a choropleth map of 2020 election results by county
+(excluding Alaska and Hawaii). The bluer the color, the higher the share
+of the vote won by the Democratic party in that county, so a vote share
+of 0 is bright red and a vote share of 1 is bright blue. Note that there
+are more than two parties, and I lump all votes other than D or R into
+Other - the Other total is never enough to "win" any county, let alone
+any state. For the purposes of the map, Other is excluded, but it
+doesn't make much difference to the naked eye. Note that there are a few
+obvious standouts - can you see the Oglala Sioux reservation in South
+Dakota? - but the idea that there are "red" and "blue" states is
+obviously a great oversimplification. The smallest D vote share (30.9%)
+was in Roberts County TX, and the largest (apart from Washington DC
+which counts as a county for our purposes) was 89.3% in Prince George
+County MD, which borders Washington DC.
+
+
+ 
+<img src="votemap2020.png" alt="US vote map 2020"  style="width:70%;">
+ 
+<hr>
+ 
+ <h2> Prediction</h2>
+ 
+Our goal is to predict the 2020 results as well as possible using only
+historical voting data and the opinion poll average. We will predict
+vote share of D and R in each county. A first step is to ignore polling
+data altogether. How well can we predict the 2020 results just from the
+elections in 2000-2016? The answer may be surprising for those more
+used to forecasting in other countries.
+
+The correlation between D or R vote share in 2020 and in 2016 is more
+than 0.86. When we use a simple linear regression where 2000-2016 is the
+training data  and 2020 is the test data, the results are pretty good:
+linear regression for D vote share (with the only predictors being the D
+and R vote shares in previous elections in that county) has RMSE 0.0384
+and R^2 = 0.968, with very similar results for the regression for R vote
+share.
+
+<p>
+However, there is no reason to suspect that linear regression is the
+right tool here. 
+Training a random forest algorithm on 2000-2016 yields clearly better
+results. In particular the error in vote share approximation is much
+lower, with RMSE around 0.02. 
+However, XGBoost was no better than linear regression.
+
+
+<hr>
+
+<h2> State-level results </h2>
+
+Aggregating the county-level vote share predictions requires an idea of
+turnout (how many people voted in total). For now, we use the actual
+turnout in 2020, which of course we don't know when making a real
+prediction. Another option is to assume turnout percentages are constant
+over counties, and use county population data or data on registered
+voters. Finding county-level information on turnout will be harder, and
+will likely involved checking state by state. However, we know that at
+the state level, turnout can vary from under 50% in some states to more
+like 75% in others, so this seems a suboptimal method. More
+sophisticated turnout models can also be tried, based on modeling, which
+will be a whole other project. There is plenty to do in future!
+<p> 
+Using the actual turnout numbers, the best-performing vote share
+predictor, namely RF, is correct on all states (plus DC) except Georgia
+and Florida (so predicted a bigger win to D than in fact occurred). The
+others were wrong on 4 states.
+
+<hr>
+<h2> Possible improvements and extensions </h2>
+
+Some obvious ideas for refining the predictions:
+<ul>
+<li> Improved polling data: more polls, so a trend might be apparent;
+different averaging and combining different aggregators; state-level
+polling for close states; prediction markets.
+<li> Tuning hyperparameters: I used RF and XGBoost "out of the box", with no
+attempt to find a better fit.
+<li> Probabilistic winner forecasts: randomizing over multiple runs.
+</ul>
+
+Some extensions:
+<ul>
+<li> Try the model on 2024 election data (when available) without/with
+further training.
+<li> Add some variables for fundamentals, demographics, or opinion (e.g. ANES
+data). I tried this unsystematically and even on ANES data, when
+predicting an individual vote it seemed that only opinion seemed to have any serious
+influence on the respondent's recalled vote. But I have not seriously looked at 
+ethnic group, education, etc.
+<li> Incorporate other polling averages, such as prediction markets or other aggregators.
+<li> Learn about and use predictive modeling for time series.
+<li> Try the same general methodology to predict parliamentary elections in
+UK and Canada.
+<li> Rather than prediction, look at counterfactuals: what happens under
+different assumptions on swing or voter drift (which has applications to
+analysis of districting), or what would happen under vote-swapping
+between districts (which has applications to campaign strategy or
+demographic changes).
+
+<hr> Last update 2025-05-19
+
+</body>
+</html>
