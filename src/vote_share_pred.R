@@ -155,6 +155,7 @@ mets <- function(pred) {
   return(metrics_vote)
 }
 
+# report results
 t1<-tibble(algo="",party="",metric="",estimator="",estimate=0.0)[0,]
 for(m in mods) {
   out <- mets(pred(m))
@@ -232,7 +233,8 @@ vote_rec_rep <-
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
- 
+# report results
+
 t2<-tibble(algo="",party="",.metric="",.estimator="",.estimate=0.0)[0,]
 for(m in mods) {
   out <- mets(pred(m))
