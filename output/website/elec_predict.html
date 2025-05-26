@@ -42,7 +42,8 @@ rarely change (unlike congressional districts), and there are over 3000
 of them in the US, which will give us a decent number of data points.
 Counties have a great variation in size: Los Angeles County has over 10
 million people, while some counties have around 200000. Each county is
-identified by a unique FIPS code, widely used for geographic units. For
+identified by a unique <a href="https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt">FIPS code</a>
+, widely used for geographic units. For
 example, Los Angeles County is 06037. The 06 is for California, and each
 county has a 3-digit code.
 <p>
@@ -70,7 +71,29 @@ easily fixed via the tidyr function  pivot_wider.
 <hr>
 
 <h2> Exploring the data</h2>
-First, let's look at a choropleth map of 2020 election results by county
+<p>
+For 2020, the smallest D vote share (30.9%) was in Roberts County TX,
+and the largest (apart from Washington DC which counts as a county for
+our purposes) was 89.3% in Prince George County MD, which borders
+Washington DC. Over all six elections in the dataset, the 5 counties
+with highest vote percentages for each of the three party categories are
+listed below.
+<table>
+<tr> <td>DEMOCRAT</td><td>COUNTY </td><td>vote %</td>
+<td>REPUBLICAN</td><td>COUNTY </td><td>vote %</td>  
+<td>OTHER<td>COUNTY </td><td>vote %</td></tr> 
+<tr><td></td><td>11001</td><td> 0.905</td><td></td><td> 48269</td><td> 0.922</td><td></td><td> 48995</td><td> 0.0995</td></tr>
+<tr><td></td><td>46102</td><td> 0.880</td><td></td><td> 48393</td><td> 0.920</td><td></td><td> 49049</td><td> 0.0957</td></tr>
+<tr><td></td><td>24033</td><td> 0.868</td><td></td><td> 48393</td><td> 0.918</td><td></td><td> 38037</td><td> 0.0947</td></tr>
+<tr><td></td><td>36005</td><td> 0.861</td><td></td><td> 48357</td><td> 0.903</td><td></td><td> 2038 </td><td> 0.0925</td></tr>
+<tr><td></td><td>51730</td><td> 0.861</td><td></td><td> 48195</td><td> 0.894 </td><td></td><td>49011</td><td> 0.0921</td></tr>
+</table>
+
+I need to check out what FIPS code 2038 is - it looks like a special one, since all others are odd numbers and 
+it does not appear in the list linked to above. Note that the 5 highest Republican vote shares overall are all in 
+counties in Texas.
+<p>
+Now let's look at a choropleth map of 2020 election results by county
 (excluding Alaska and Hawaii). The bluer the color, the higher the share
 of the vote won by the Democratic party in that county, so a vote share
 of 0 is bright red and a vote share of 1 is bright blue. Note that there
@@ -80,13 +103,8 @@ any state. For the purposes of the map, Other is excluded, but it
 doesn't make much difference to the naked eye. Note that there are a few
 obvious standouts - can you see the Oglala Sioux reservation in South
 Dakota? - but the idea that there are "red" and "blue" states is
-obviously a great oversimplification. The smallest D vote share (30.9%)
-was in Roberts County TX, and the largest (apart from Washington DC
-which counts as a county for our purposes) was 89.3% in Prince George
-County MD, which borders Washington DC.
+obviously a great oversimplification.
 
-
- 
 <img src="votemap2020.png" alt="US vote map 2020"  style="width:70%;">
  
 <hr>

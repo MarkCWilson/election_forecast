@@ -1,4 +1,4 @@
-## vote_predict_share.R
+## vote_share_predict.R
 ## Mark C. Wilson <wilson.mark.c@gmail.com>
 ##
 ## Purpose: predict vote shares from historical vote data and polling data
