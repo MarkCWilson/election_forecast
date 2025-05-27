@@ -4,8 +4,12 @@
 ## Purpose: predict vote shares from historical vote data and polling data
 ##
 
+library(tidyverse)
+library(tidymodels)
+
 library("ranger")
 library("xgboost")
+
 #library("LiblineaR")
 
 #####################################################
