@@ -16,6 +16,7 @@ library(ggplot2)
 
 # do after other analyses or move fips back to factor
 
+# choropleth
 
 vote_data_clean <- vote_data_clean %>% mutate(fips = as.integer(levels(fips)[fips]))
 counties_sf <- read_sf("data/counties.geojson")
@@ -59,4 +60,19 @@ qq<- ggplot(hawaii_merged_2020) + geom_sf(aes(fill = demfrac/(demfrac+repfrac)),
 
 s <- ggsave("output/figures/votemap_hawaii_2020.png", width = 10, height = 10) 
 
+# exploring data
+
+t<- vote_data_clean%>%  mutate(win = case_when(
+  DEMOCRAT == pmax(DEMOCRAT, REPUBLICAN, OTHER) ~ "D",
+  REPUBLICAN == pmax(DEMOCRAT, REPUBLICAN, OTHER) ~ "R",
+  OTHER == pmax(DEMOCRAT, REPUBLICAN, OTHER) ~ "O"),
+  lagwin = case_when(
+    lagDEM == pmax(lagDEM,lagREP,lagOTH) ~ "D",
+    lagREP == pmax(lagDEM,lagREP,lagOTH) ~ "R",
+    lagOTH == pmax(lagDEM,lagREP,lagOTH) ~ "O"),
+  win = as.factor(win), lagwin = as.factor(lagwin)) %>%
+  mutate(demfrac = DEMOCRAT/(totalvotes),
+         repfrac = REPUBLICAN/(totalvotes),othfrac = OTHER/totalvotes,
+         lagDfrac = lagDEM/(totalvotes), lagRfrac = lagREP/(totalvotes),
+         lagOfrac = lagOTH/totalvotes) 
 
