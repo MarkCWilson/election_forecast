@@ -22,6 +22,7 @@ if (!dir.exists('output/figures')){
 #####################################################
 ##### Import data
 
+setwd("/Users/mwilson/Documents/GitHub/election_forecast/")
 vote_data_orig <- as_tibble(read.table('data/pres_county_1976_2020/countypres_2000-2020.tab', header=FALSE,sep="\t",strip.white=TRUE, quote="\""))
 
 #####################################################
@@ -87,3 +88,4 @@ vote_data_clean <- vote_data_clean %>%
   select(year,fips,totalvotes,DEMOCRAT, REPUBLICAN,OTHER, 
          lagDEM, lagREP, lagOTH)
 
+write.csv(vote_data_clean, "data/temp/vote_data_clean.csv")

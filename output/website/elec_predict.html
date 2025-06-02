@@ -19,23 +19,22 @@ This project will evolve as I get more time to work on it, and the key
 data and code can be found on <a
 href="https://github.com/MarkCWilson/election_forecast">Github</a>. All
 the code is in R, consistently using the tidyverse and tidymodels
-approach. As a start, I will consider the first type of model, using
+approach. As a start, I will use
 only historical information on voting in US Presidential elections, plus
 a single polling average. As time permits, I intend to refine the
 analyses, and apply the methodology to countries outside the US.
 <hr>
 
 <h2> Data </h2>
-There are many choices to be made. Much data on US elections is available 
-(I got some from
+There are many choices to be made. I downloaded voting data from
 the <a href="https://electionlab.mit.edu/data">MIT Elections
-Project</a> in order to save harvesting from 51 individual websites).
+Project</a> in order to save harvesting from 51 individual websites.
  For polling data, I used individual years from Wikipedia and <a
 href="https://www.realclearpolling.com/polls/president/general/2020/
 trump-vs-biden">RealClearPolitics</a> to get either the final Gallup
 poll or the RCP polling average as late as possible before Election Day.
 <p>
-I settled on county-level data, for which MIT provides data from 2000 to 2020
+I settled on county-level voting data, for which MIT provides data from 2000 to 2020
 inclusive. Counties have no particular electoral
 significance, but they are a subdivision of a state whose boundaries
 rarely change (unlike congressional districts), and there are over 3000
@@ -49,14 +48,15 @@ identified by a unique <a href="https://transition.fcc.gov/oet/info/maps/census/
 example, Los Angeles County is 06037. The 06 is for California, and each
 county has a 3-digit code.
 <p>
-Despite the overall high quality of the data, some data cleaning is needed.  I
-need to let them know at MIT that the famous Bush-Gore Florida 2000
-results are wrong, for example. Preliminary analysis as below revealed
-some strange results, which I tracked down to the fact that some
-counties had changed names and FIPS codes. Also, there is something
-weird about Kansas City, which intersects several counties and has a
-strange FIPS code 2938000, so I deleted that data entirely for now. There are some strange
-codes from Alaska which may be historic and need fixing, but I have not yet explored all details.
+Despite the overall high quality of the data, some data cleaning is
+needed.  I need to let them know at MIT that the famous Bush-Gore
+Florida 2000 results are wrong, for example. Preliminary analysis as
+below revealed some strange results, which I tracked down to the fact
+that some counties had changed names and FIPS codes. Also, there is
+something weird about Kansas City, which intersects several counties and
+has a strange FIPS code 2938000, so I deleted that data entirely for
+now. There are some strange codes from Alaska which may be historic and
+need fixing, but I have not yet explored all details.
 <p> The CSV is not in the tidy data format, but rather in "wide" format. For example, 
 the first row looks like
 
@@ -80,10 +80,10 @@ and the largest (apart from Washington DC which counts as a county for
 our purposes) was 89.3% in Prince George County MD, which borders
 Washington DC. Over all six elections in the dataset, the 5 counties
 with highest vote percentages for each of the three party categories are
-listed below. Note that there
-are more than two parties, and I lump all votes other than D or R into
-Other - the Other total is never enough to "win" any county, let alone
-any state, even if it represented a single party.
+listed below. Note that there are more than two parties, and I lump all
+votes other than D or R into Other - the Other total is never enough to
+"win" any county, let alone any state, even if it represented a single
+party.
 <table>
 <tr> <td>DEMOCRAT</td><td>COUNTY </td><td>vote %</td>
 <td>REPUBLICAN</td><td>COUNTY </td><td>vote %</td>  
@@ -95,18 +95,20 @@ any state, even if it represented a single party.
 <tr><td></td><td>51730</td><td> 0.861</td><td></td><td> 48195</td><td> 0.894 </td><td></td><td>49011</td><td> 0.0921</td></tr>
 </table>
 
-I need to check out what FIPS code 2038 is - it looks like a special one, since all others are odd numbers and 
-it does not appear in the list linked to above. Note that the 5 highest Republican vote shares overall are all in 
-counties in Texas.
+I need to check out what FIPS code 2038 is - it looks like a special
+one, since all others are odd numbers and it does not appear in the list
+linked to above. Note that the 5 highest Republican vote shares overall
+are all in counties in Texas.
 <p>
 Now let's look at a choropleth map of 2020 election results by county
 (excluding Alaska and Hawaii). The bluer the color, the higher the share
 of the vote won by the Democratic party in that county, so a vote share
-of 0 is bright red and a vote share of 1 is bright blue. For the purposes of the map, Other is excluded, but it
-doesn't make much difference to the naked eye. Note that there are a few
-obvious standouts - can you see the Oglala Sioux reservation in South
-Dakota? - but the idea that there are "red" and "blue" states is
-obviously a great oversimplification.
+of 0 is bright red and a vote share of 1 is bright blue. For the
+purposes of the map, Other is excluded, but it doesn't make much
+difference to the naked eye. Note that there are a few obvious standouts
+- can you see the Oglala Sioux reservation in South Dakota? - but the
+idea that there are "red" and "blue" states is obviously a great
+oversimplification.
 
 <img src="votemap2020.png" alt="US vote map 2020"  style="width:70%;">
  
@@ -167,18 +169,17 @@ turnout in 2020, which of course we don't know when making a real
 prediction. Another option is to assume turnout percentages are constant
 over counties, and use county population data or data on registered
 voters. Finding county-level information on turnout will be harder, and
-will likely involved checking state by state - I have not yet found a curated source 
-online. However, we know that at
-the state level, turnout can vary from under 50% in some states to more
-like 75% in others, but I have no information on how it may vary inside a 
-state. More
+will likely involved checking state by state - I have not yet found a
+curated source online. However, we know that at the state level, turnout
+can vary from under 50% in some states to more like 75% in others, but I
+have no information on how it may vary inside a state. More
 sophisticated turnout models can also be tried, based on modeling, which
 will be a whole other project. There is plenty to do in future!
 <p> 
-Using the actual turnout numbers, linear regression and XGBoost were 
-correct on all states (plus DC) except Georgia
-and Florida (so predicted a bigger win to D than in fact occurred), while 
-RF was wrong also on Pennsylvania.
+Using the actual turnout numbers, linear regression and XGBoost were
+correct on all states (plus DC) except Georgia and Florida (so predicted
+a bigger win to D than in fact occurred), while RF was wrong also on
+Pennsylvania.
 
 <hr>
 <h2> Possible improvements and extensions </h2>
