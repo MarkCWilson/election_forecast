@@ -45,8 +45,11 @@ alaska_merged_2020 <- alaska_merged %>%
 hawaii_merged_2020 <- hawaii_merged %>% 
   filter(year==2020)
 
+#qq<- ggplot(lower_48_merged_2020) + geom_sf(aes(fill = demfrac/(demfrac+repfrac)), alpha = 0.7) +
+#  theme_void() + guides(fill="none") +scale_fill_gradient(low = "#FF0000", high="#0000FF", limits = c(0,1))
+
 qq<- ggplot(lower_48_merged_2020) + geom_sf(aes(fill = demfrac/(demfrac+repfrac)), alpha = 0.7) +
-  theme_void() + guides(fill="none") +scale_fill_gradient(low = "#FF0000", high="#0000FF", limits = c(0,1))
+  theme_void() + guides(fill="none") +scale_fill_gradient(type="div",palette="RdBu", limits = c(0,1))
 
 s <- ggsave("output/figures/votemap_lower48_2020.png", width = 10, height = 10) 
 

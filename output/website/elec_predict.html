@@ -34,23 +34,26 @@ href="https://www.realclearpolling.com/polls/president/general/2020/
 trump-vs-biden">RealClearPolitics</a> to get either the final Gallup
 poll or the RCP polling average as late as possible before Election Day.
 <p>
-I settled on county-level voting data, for which MIT provides data from 2000 to 2020
-inclusive. Counties have no particular electoral
+I settled on county-level voting data, for which MIT provides data from
+2000 to 2020 inclusive. Counties have no particular electoral
 significance, but they are a subdivision of a state whose boundaries
 rarely change (unlike congressional districts), and there are over 3000
-of them in the US, which will give us a decent number of data points. Since elections of this type 
-occur only once every 4 years, using states will likely give us too few data points.
+of them in the US, which will give us a decent number of data points.
+Since elections of this type occur only once every 4 years, using states
+will likely give us too few data points.
 <p>
-Counties have a great variation in size: Los Angeles County has over 10
-million people, while some counties have around 200000. Each county is
-identified by a unique <a href="https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt">FIPS code</a>
-, widely used for geographic units. For
-example, Los Angeles County is 06037. The 06 is for California, and each
-county has a 3-digit code.
+Counties have a great variation in size: Los Angeles County, CA has over
+10 million people, while Loving County, TX has under 100. Each county is
+identified by a unique <a
+href="https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt">
+FIPS code</a> , widely used for geographic units. For example, Los
+Angeles County is 06037. The 06 is for California, and each county has a
+3-digit code.
 <p>
 Despite the overall high quality of the data, some data cleaning is
-needed.  I need to let them know at MIT that the famous Bush-Gore
-Florida 2000 results are wrong, for example. Preliminary analysis as
+needed.  I need to let them know at MIT that some of the famous Bush-Gore
+Florida 2000 results are wrong, for example, and I have not fixed them in my data. 
+Preliminary analysis as
 below revealed some strange results, which I tracked down to the fact
 that some counties had changed names and FIPS codes. Also, there is
 something weird about Kansas City, which intersects several counties and
@@ -74,7 +77,13 @@ easily fixed via the tidyr function  pivot_wider.
 <hr>
 
 <h2> Exploring the data</h2>
-<p>
+
+You can explore the data visually using 
+<a href="https://markcwilson.shinyapps.io/dataviz/" target="_blank">an
+RShiny app</a> I made (it takes 1-2 minutes to load, but then runs
+fine).
+<hr>
+
 For 2020, the smallest D vote share (30.9%) was in Roberts County TX,
 and the largest (apart from Washington DC which counts as a county for
 our purposes) was 89.3% in Prince George County MD, which borders
@@ -101,22 +110,26 @@ linked to above. Note that the 5 highest Republican vote shares overall
 are all in counties in Texas.
 <p>
 Now let's look at a choropleth map of 2020 election results by county
-(excluding Alaska and Hawaii). The bluer the color, the higher the share
-of the vote won by the Democratic party in that county, so a vote share
-of 0 is bright red and a vote share of 1 is bright blue. For the
-purposes of the map, Other is excluded, but it doesn't make much
-difference to the naked eye. Note that there are a few obvious standouts
-- can you see the Oglala Sioux reservation in South Dakota? - but the
-idea that there are "red" and "blue" states is obviously a great
-oversimplification.
+(excluding Alaska and Hawaii). I found (can't recall where - apologies
+to the creator of this file) an existing geojson format file describing
+all the relevant geographical information and merged with the voting
+data above. The bluer the color, the higher the share of the vote won by
+the Democratic party in that county, so a vote share of 0 is bright red
+and a vote share of 1 is bright blue. For the purposes of the map, Other
+is excluded, but it doesn't make much difference to the naked eye. Note
+that there are a few obvious standouts - can you see the Oglala Sioux
+reservation in South Dakota? - but the idea that there are "red" and
+"blue" states is obviously a great oversimplification. 
 
 <img src="votemap2020.png" alt="US vote map 2020"  style="width:70%;">
  
 <hr>
+
+
  
  <h2> Prediction</h2>
  
-Our goal is to predict the 2020 results as well as possible using only
+Our goal is to predict the 2020 results as well as possible, using only
 historical voting data and the opinion poll average. We will predict
 vote share of D and R in each county. A first step is to ignore polling
 data altogether. How well can we predict the 2020 results just from the
@@ -136,6 +149,12 @@ There is no reason to suspect that linear regression is the right tool
 here. However, training a random forest or XGBoost implementation in R
 on the same data yields only small improvements (RMSE still at least
 0.0217 in all cases).
+
+<p> This level of error would be amazingly good for many applications.
+However, for election prediction, this is not so. The problem is that
+many states are not very close, and the election really hinges on 7 or
+so "swing states" where the margin of victory can be much smaller than
+the errors we achieve. So we should try harder.
 
 <p>
 Moving on to incorporate polling data, we are faced with the fact that
@@ -171,8 +190,8 @@ over counties, and use county population data or data on registered
 voters. Finding county-level information on turnout will be harder, and
 will likely involved checking state by state - I have not yet found a
 curated source online. However, we know that at the state level, turnout
-can vary from under 50% in some states to more like 75% in others, but I
-have no information on how it may vary inside a state. More
+can vary from under 50% in some states to more like 75% in others. I
+have no information yet on how it may vary inside a state. More
 sophisticated turnout models can also be tried, based on modeling, which
 will be a whole other project. There is plenty to do in future!
 <p> 
@@ -213,7 +232,7 @@ analysis of districting), or what would happen under vote-swapping
 between districts (which has applications to campaign strategy or
 demographic changes).
 
-<hr> Project started 2025-04. Last update 2025-05-26.
+<hr> Last update 2025-06-15.
 
 </body>
 </html>

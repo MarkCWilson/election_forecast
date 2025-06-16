@@ -11,15 +11,6 @@ library(tidyverse)
 library(tidymodels)
 
 #####################################################
-##### Output directory for figures
-
-if (!dir.exists('output/figures')){
-  dir.create('output/figures')
-} else {
-  
-}
-
-#####################################################
 ##### Import data
 
 setwd("/Users/mwilson/Documents/GitHub/election_forecast/")
@@ -64,7 +55,7 @@ vote_data_clean <- vote_data_clean %>%
 ##### Restrict to relevant data - major choices needed
 
 vote_data_clean <- vote_data_clean %>% 
-  select(!office & !state:county & !datadate) 
+  select(!office & !stabb:county & !datadate) 
 
 #####################################################
 ##### Fix remaining data format problems, improve variable names
@@ -85,7 +76,7 @@ vote_data_clean <- vote_data_clean %>%
          lagREP = lag(REPUBLICAN, n=1, order_by=fips),
          OTHER = totalvotes - DEMOCRAT - REPUBLICAN,
          lagOTH = lag(OTHER, n=1, order_by=fips)) %>%
-  select(year,fips,totalvotes,DEMOCRAT, REPUBLICAN,OTHER, 
+  select(year,state,fips,totalvotes,DEMOCRAT, REPUBLICAN,OTHER, 
          lagDEM, lagREP, lagOTH)
 
 write.csv(vote_data_clean, "data/temp/vote_data_clean.csv")
