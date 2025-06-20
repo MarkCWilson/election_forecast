@@ -80,3 +80,5 @@ vote_data_clean <- vote_data_clean %>%
          lagDEM, lagREP, lagOTH)
 
 write.csv(vote_data_clean, "data/temp/vote_data_clean.csv")
+
+

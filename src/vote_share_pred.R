@@ -17,7 +17,7 @@ library("xgboost")
 
 # run vote_clean.R first
 
-temp <-vote_data_clean %>% 
+temp <-vote_data_clean_algara %>% 
   # drop_na() %>%
   mutate(win = case_when(
     DEMOCRAT == pmax(DEMOCRAT, REPUBLICAN, OTHER) ~ "D",
@@ -33,28 +33,31 @@ temp <-vote_data_clean %>%
          lagDfrac = lagDEM/(totalvotes), lagRfrac = lagREP/(totalvotes),
          lagOfrac = lagOTH/totalvotes) %>% drop_na()
 
+tempt <- temp %>% select(year:fips | demfrac:lagOfrac  )
+
+
 #set.seed(222)
 # split into training and testing 
-#data_split <- initial_split(temp2, prop = 3/4)
+#data_split <- initial_split(tempt, prop = 3/4)
 
 # create data frames for the two sets
 #train_data <- training(data_split)
 #test_data  <- testing(data_split)
 
-tempt <- temp %>% select(year:fips | demfrac:lagOfrac  )
+
 train_data <- tempt %>% filter(!year ==2020) 
 test_data <- tempt %>% filter(year==2020)
 
 # make recipe
 vote_rec_dem <- 
   recipe(demfrac ~ ., data = train_data) %>% 
-  update_role(year,fips,repfrac,new_role = "ID") %>% 
+  update_role(year,fips,repfrac,othfrac,new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
 vote_rec_rep <- 
   recipe(repfrac ~ ., data = train_data) %>% 
-  update_role(year,fips,demfrac,new_role = "ID") %>% 
+  update_role(year,fips,demfrac,othfrac,new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
@@ -188,16 +191,16 @@ sw <- function(v0,vs0,d,str) {
 
 ### polling data
 
-poll <- cbind(c(2000,2004,2008,2012,2016,2020), 
-              c(0.48,0.469,0.521,0.488,0.468, 0.512), 
-              c(0.46, 0.489, 0.445,0.481,0.436, 0.440))
+poll <- cbind(c(1980,1984,1988,1992,1996,2000,2004,2008,2012,2016,2020), 
+              c(0.410,0.406,0.457,0.430,0.492,0.48,0.469, 0.521 ,0.488,0.468, 0.512), 
+              c(0.508,0.588,0.534,0.375,0.407,0.46, 0.489, 0.445,0.481,0.436, 0.440))
 colnames(poll) <- c("year","pollDfrac", "pollRfrac")
 poll <- as_tibble(poll)
 
 ### compute swing
 
 vote_swing <- 
-  vote_data_clean %>% group_by(year) %>% 
+  vote_data_clean_algara %>% drop_na() %>% group_by(year) %>% 
   summarize(Dtot = sum(DEMOCRAT), Rtot = sum(REPUBLICAN), Otot = sum(OTHER),
             Dfrac = Dtot/(Dtot+Rtot+Otot), 
             Rfrac = Rtot/(Dtot+Rtot+Otot)) 
@@ -215,24 +218,24 @@ temp2 <- merge(temp,vote_swing) %>%
          predpollDfrac2 = lagDfrac + sw(lagDfrac,Dfrac,pollswingD, "ups"),
          predRfrac = lagRfrac + sw(lagRfrac,Rfrac,swingR, "pw"),
          predpollRfrac = lagRfrac + sw(lagRfrac,Rfrac,pollswingR, "pw"),
-         predpollRfrac2 = lagRfrac + sw(lagRfrac,Rfrac,pollswingR, "ups"))
+         predpollRfrac2 = lagRfrac + sw(lagRfrtac,Rfrac,pollswingR, "ups"))
 
-temp2t <- temp2 %>% select(year:fips | win:othfrac 
-                           | lagDfrac:lagOfrac | swingD:predpollRfrac2)
-train_data <- temp2t %>% filter(year<2020)
+temp2t <- temp2 %>% select(year:fips | demfrac:othfrac 
+                           | lagDfrac:lagOfrac | predpollDfrac:predpollRfrac2)
+train_data <- temp2t %>% filter(year<2020 & !(year==1992) )
 test_data <- temp2t %>% filter(year==2020)
 
 # make recipe
 vote_rec_dem <- 
   recipe(demfrac ~ ., data = train_data) %>% 
-  update_role(year, fips, win, lagwin, repfrac, othfrac, swingD, predpollDfrac, 
+  update_role(year, fips, repfrac, othfrac, predpollDfrac, 
               predpollRfrac, new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
 vote_rec_rep <- 
   recipe(repfrac ~ ., data = train_data) %>% 
-  update_role(year, fips, win, lagwin, demfrac, othfrac, swingD, predpollRfrac, 
+  update_role(year, fips, demfrac, othfrac, predpollRfrac, 
               predpollDfrac, new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())

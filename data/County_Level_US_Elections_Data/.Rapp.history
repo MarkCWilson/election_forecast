@@ -1,0 +1,2 @@
+load("/Users/mwilson/Downloads/dataverse_files/County_Level_US_Elections_Data/dataverse_shareable_presidential_county_returns_1868_2020.Rdata")
+pres_elections_release

@@ -15,53 +15,61 @@ img {
 
 <h1>US Presidential election forecasting</h1>
 
-This project will evolve as I get more time to work on it, and the key
-data and code can be found on <a
-href="https://github.com/MarkCWilson/election_forecast">Github</a>. All
-the code is in R, consistently using the tidyverse and tidymodels
-approach. As a start, I will use
-only historical information on voting in US Presidential elections, plus
-a single polling average. As time permits, I intend to refine the
+This project will evolve as I get more time to work on it. As time permits, I intend to refine the
 analyses, and apply the methodology to countries outside the US.
+<p>
+The key
+data and code can be found on <a
+href="https://github.com/MarkCWilson/election_forecast">Github</a>. The code uses 
+R, Python, and SQL (just to show I can do it - either R or Python would be enough 
+because these datasets are big enough to fit in memory).
 <hr>
 
 <h2> Data </h2>
-There are many choices to be made. I downloaded voting data from
-the <a href="https://electionlab.mit.edu/data">MIT Elections
-Project</a> in order to save harvesting from 51 individual websites.
- For polling data, I used individual years from Wikipedia and <a
+There are many choices to be made. I downloaded presidential election
+voting data  from the <a
+href="https://electionlab.mit.edu/data">MIT Elections Project</a> in
+order to save harvesting from 51 individual websites. Much
+further into the project, I found an amazing <a
+href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.
+7910/DVN/DGUMFI"> dataset compiled by C. Algara and S. Amlani, which
+goes back much further in time.
+<p>
+For polling data, I used individual years from Wikipedia and <a
 href="https://www.realclearpolling.com/polls/president/general/2020/
 trump-vs-biden">RealClearPolitics</a> to get either the final Gallup
-poll or the RCP polling average as late as possible before Election Day.
+poll or the RCP polling average as late as possible before Election Day. These are 
+national-level polls, as is common. For earlier years I used the actual 
+election popular vote percentages taken from Wikipedia.
 <p>
 I settled on county-level voting data, for which MIT provides data from
 2000 to 2020 inclusive. Counties have no particular electoral
 significance, but they are a subdivision of a state whose boundaries
-rarely change (unlike congressional districts), and there are over 3000
-of them in the US, which will give us a decent number of data points.
-Since elections of this type occur only once every 4 years, using states
-will likely give us too few data points.
+rarely change (unlike congressional districts or voting precincts), and
+there are over 3000 of them in the US, which will give us a decent
+number of data points. Since elections of this type occur only once
+every 4 years, using states will likely give us too few data points.
 <p>
 Counties have a great variation in size: Los Angeles County, CA has over
 10 million people, while Loving County, TX has under 100. Each county is
 identified by a unique <a
 href="https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt">
-FIPS code</a> , widely used for geographic units. For example, Los
+FIPS code</a>, widely used for geographic units. For example, Los
 Angeles County is 06037. The 06 is for California, and each county has a
 3-digit code.
 <p>
-Despite the overall high quality of the data, some data cleaning is
-needed.  I need to let them know at MIT that some of the famous Bush-Gore
-Florida 2000 results are wrong, for example, and I have not fixed them in my data. 
-Preliminary analysis as
-below revealed some strange results, which I tracked down to the fact
-that some counties had changed names and FIPS codes. Also, there is
-something weird about Kansas City, which intersects several counties and
-has a strange FIPS code 2938000, so I deleted that data entirely for
-now. There are some strange codes from Alaska which may be historic and
-need fixing, but I have not yet explored all details.
-<p> The CSV is not in the tidy data format, but rather in "wide" format. For example, 
-the first row looks like
+Despite the overall high quality of the data, there are some issues. I
+need to let them know at MIT that some of the famous Bush-Gore Florida
+2000 results are wrong, for example, and I have not fixed them in my
+data. Preliminary exploratory analysis revealed some strange results,
+which I tracked down to the fact that some counties had changed names
+and FIPS codes. Also, there is something weird about Kansas City, which
+intersects several counties and has a strange FIPS code 2938000, so I
+deleted that data entirely for now. There are some strange codes from
+Alaska which may be historic and need fixing, but I have not yet
+explored all details.
+<p> The CSV is not in the tidy data format, but rather in "wide" format. For
+example, the first row looks like
 
 <table>
 <tr> <td>2000</td> <td>ALABAMA</td>  <td>AL</td>  <td>AUTAUGA <td>1001</td>  <td>US</td> 
@@ -78,7 +86,7 @@ easily fixed via the tidyr function  pivot_wider.
 
 <h2> Exploring the data</h2>
 
-You can explore the data visually using 
+You can explore the MIT Elections Lab data visually using 
 <a href="https://markcwilson.shinyapps.io/dataviz/" target="_blank">an
 RShiny app</a> I made (it takes 1-2 minutes to load, but then runs
 fine).
@@ -125,17 +133,15 @@ reservation in South Dakota? - but the idea that there are "red" and
  
 <hr>
 
-
- 
  <h2> Prediction</h2>
  
-Our goal is to predict the 2020 results as well as possible, using only
-historical voting data and the opinion poll average. We will predict
-vote share of D and R in each county. A first step is to ignore polling
-data altogether. How well can we predict the 2020 results just from the
-elections in 2000-2016? The answer may be surprising for those more
-used to forecasting in other countries.
-
+Our goal is to predict the 2020 results as well as possible, at first
+using only historical voting data and the opinion poll average. We will
+predict vote share of D and R in each county. A zeroth-level step is to
+ignore polling data altogether. How well can we predict the 2020 results
+just from the elections in 2000-2016? The answer may be surprising for
+those more used to forecasting in other countries.
+<p>
 The correlation between D or R vote share in 2020 and in 2016 is 0.869.
 When we use a simple linear regression (pure lasso model) where
 2000-2016 is the training data  and 2020 is the test data, the results
@@ -143,40 +149,39 @@ are pretty good: linear regression for D vote share (with the only
 predictors being the D and R vote shares in previous elections in that
 county) has RMSE 0.0384 and R^2 = 0.967, with slightly better results
 for the regression (RMSE 0.0251, R^2 = 0.969) for R vote share.
-
 <p>
 There is no reason to suspect that linear regression is the right tool
 here. However, training a random forest or XGBoost implementation in R
 on the same data yields only small improvements (RMSE still at least
 0.0217 in all cases).
-
-<p> This level of error would be amazingly good for many applications.
+<p> 
+This level of error would be amazingly good for many applications.
 However, for election prediction, this is not so. The problem is that
 many states are not very close, and the election really hinges on 7 or
 so "swing states" where the margin of victory can be much smaller than
 the errors we achieve. So we should try harder.
-
 <p>
 Moving on to incorporate polling data, we are faced with the fact that
 most polls are national. The standard way to downscale changes in
 national vote shares to a smaller district such as a county is to use a
 "swing model". The most popular is uniform swing: if we add 5% to a
-party's overall vote share then we simply impute a 5% increase to it in
+party's overall vote share then we simply impute a 5 percentage point
+ increase to it in
 each county. This obviously can't be correct in general (see <a
 href="https://journals.sagepub.com/doi/pdf/10.1177/09516298221123263?
 casa_token=2_nzwWr-l3MAAAAA:
 QeRch5_K2wStttMKY3VS42o3IkccU157ISQ64vQ_6BbToIkul59kHn8N7bltph6O0laYSpYe
-m-NC"> my paper with Bernie Grofman</a>) but seems fairly good in
-practice. In the paper we suggest a piecewise linear model, which 
-treats positive and negative swings differently, and which has  better
-theoretical behavior. They give very similar results on this dataset
-(correlation of 0.995) so we use the piecewise swing only. Simply using
-the county-level predictions derived from the swing model gives a
-correlation with the true 2020 result of 0.904. Training on all data
-2000-2016 yields RMSE 0.0269 and R^2 = 0.973 for D vote share with random forest, with
-larger RMSE (0.0335) for R vote share. It is fairly surprising that polling 
-information gives so little improvement in the quality of prediction. There is 
-much to think about.
+m-NC"> my paper with Bernie Grofman</a>) but seems fairly good in practice. In
+the paper we suggest a piecewise linear model, which treats positive and
+negative swings differently, and which has  better theoretical behavior.
+They give very similar results on this dataset (correlation of 0.995) so
+we use uniform swing only for simplicity. Simply using the county-level
+predictions derived from the swing model gives a correlation with the
+true 2020 result of 0.904. Training on all data 2000-2016 yields RMSE
+0.0269 and R^2 = 0.973 for D vote share with random forest, with larger
+RMSE (0.0335) for R vote share. It is fairly surprising that polling
+information gives so little improvement in the quality of prediction.
+There is much to think about.
 
 <hr>
 
@@ -198,7 +203,7 @@ will be a whole other project. There is plenty to do in future!
 Using the actual turnout numbers, linear regression and XGBoost were
 correct on all states (plus DC) except Georgia and Florida (so predicted
 a bigger win to D than in fact occurred), while RF was wrong also on
-Pennsylvania.
+Pennsylvania. ******
 
 <hr>
 <h2> Possible improvements and extensions </h2>
@@ -210,29 +215,29 @@ different averaging and combining different aggregators; state-level
 polling for close states; prediction markets.
 <li> Tuning hyperparameters: I used RF and XGBoost "out of the box", with no
 attempt to find a better fit.
-<li> Probabilistic winner forecasts: randomizing over multiple runs.
+<li> Add some variables for fundamentals, demographics, or opinion (e.g. ANES
+data).
 </ul>
 
 Some extensions:
 <ul>
 <li> Try the model on 2024 election data (when available) without/with
 further training.
-<li> Add some variables for fundamentals, demographics, or opinion (e.g. ANES
-data). I tried this unsystematically and even on ANES data, when
+ I tried this unsystematically and even on ANES data, when
 predicting an individual vote it seemed that only opinion seemed to have any serious
 influence on the respondent's recalled vote. But I have not seriously looked at 
 ethnic group, education, etc.
 <li> Incorporate other polling averages, such as prediction markets or other aggregators.
-<li> Learn about and use predictive modeling for time series.
+<li> Probabilistic winner forecasts: randomizing over multiple runs.
 <li> Try the same general methodology to predict parliamentary elections in
-UK and Canada.
+UK and Canada. 
 <li> Rather than prediction, look at counterfactuals: what happens under
 different assumptions on swing or voter drift (which has applications to
 analysis of districting), or what would happen under vote-swapping
 between districts (which has applications to campaign strategy or
 demographic changes).
 
-<hr> Last update 2025-06-15.
+<hr> Last update 2025-06-19.
 
 </body>
 </html>
