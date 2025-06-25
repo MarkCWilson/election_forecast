@@ -22,5 +22,5 @@ df<- pres_elections_release %>%
   select(year,state,fips,totalvotes,DEMOCRAT, REPUBLICAN,OTHER, 
          lagDEM, lagREP, lagOTH)
 
-write.csv(df, "data/temp/vote_data_clean_algara.csv")
+write.csv(df, "data/temp/vote_data_clean_algara.csv", row.names=FALSE)
 vote_data_clean_algara <- df

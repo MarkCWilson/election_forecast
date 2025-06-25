@@ -44,20 +44,19 @@ tempt <- temp %>% select(year:fips | demfrac:lagOfrac  )
 #train_data <- training(data_split)
 #test_data  <- testing(data_split)
 
-
-train_data <- tempt %>% filter(!year ==2020) 
+train_data <- tempt %>% filter(year < 2020) 
 test_data <- tempt %>% filter(year==2020)
 
 # make recipe
 vote_rec_dem <- 
   recipe(demfrac ~ ., data = train_data) %>% 
-  update_role(year,fips,repfrac,othfrac,new_role = "ID") %>% 
+  update_role(state,repfrac,othfrac,lagOfrac,new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
 vote_rec_rep <- 
   recipe(repfrac ~ ., data = train_data) %>% 
-  update_role(year,fips,demfrac,othfrac,new_role = "ID") %>% 
+  update_role(fips,demfrac,othfrac,lagOfrac,new_role = "ID") %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
@@ -226,23 +225,28 @@ temp2 <- merge(temp,vote_swing) %>%
          predpollRfrac = lagRfrac + sw(lagRfrac,Rfrac,pollswingR, "pw"),
          predpollRfrac2 = lagRfrac + sw(lagRfrtac,Rfrac,pollswingR, "ups"))
 
-temp2t <- temp2 %>% select(year:fips | demfrac:othfrac 
+ temp2t <- temp2 %>% select(year:fips | demfrac:othfrac 
                            | lagDfrac:lagOfrac | predpollDfrac:predpollRfrac2)
-train_data <- temp2t %>% filter(year<2020 & !(year==1992) )
+#temp2t <- temp2 %>% select(year:lagOfrac)
+
+
+train_data <- temp2t %>% filter(year<2020 & (year>1996) &!(year==2004))
 test_data <- temp2t %>% filter(year==2020)
 
 # make recipe
 vote_rec_dem <- 
   recipe(demfrac ~ ., data = train_data) %>% 
-  update_role(year, fips, repfrac, othfrac, predpollDfrac, 
-              predpollRfrac, new_role = "ID") %>% 
+  update_role(repfrac, othfrac, 
+               new_role = "ID") %>% 
+  step_novel() %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
 vote_rec_rep <- 
   recipe(repfrac ~ ., data = train_data) %>% 
-  update_role(year, fips, demfrac, othfrac, predpollRfrac, 
-              predpollDfrac, new_role = "ID") %>% 
+  update_role(demfrac, othfrac,  
+               new_role = "ID") %>% 
+  step_novel() %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors())
 
