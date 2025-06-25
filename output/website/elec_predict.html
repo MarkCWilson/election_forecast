@@ -15,40 +15,28 @@ img {
 
 <h1>US Presidential election forecasting</h1>
 
-This project will evolve as I get more time to work on it. As time permits, I intend to refine the
-analyses, and apply the methodology to countries outside the US.
+This project will evolve as I get more time to work on it. As time
+permits, I intend to refine the analyses, and apply the methodology to
+countries outside the US. The report below summarizes many hours of 
+painstaking work, and I omit all the false starts.
 <p>
-The key
-data and code can be found on <a
-href="https://github.com/MarkCWilson/election_forecast">Github</a>. The code uses 
-R, Python, and SQL (just to show I can do it - either R or Python would be enough 
-because these datasets are big enough to fit in memory).
+The key data and code can be found on <a
+href="https://github.com/MarkCWilson/election_forecast">Github</a>. The
+code uses R, Python, and SQL (just to show I can do it - either R or
+Python would be enough because these datasets are big enough to fit in
+memory).
 <hr>
 
 <h2> Data </h2>
-There are many choices to be made. I downloaded presidential election
-voting data  from the <a
-href="https://electionlab.mit.edu/data">MIT Elections Project</a> in
-order to save harvesting from 51 individual websites. Much
-further into the project, I found an amazing <a
-href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.
-7910/DVN/DGUMFI"> dataset compiled by C. Algara and S. Amlani, which
-goes back much further in time.
-<p>
-For polling data, I used individual years from Wikipedia and <a
-href="https://www.realclearpolling.com/polls/president/general/2020/
-trump-vs-biden">RealClearPolitics</a> to get either the final Gallup
-poll or the RCP polling average as late as possible before Election Day. These are 
-national-level polls, as is common. For earlier years I used the actual 
-election popular vote percentages taken from Wikipedia.
-<p>
-I settled on county-level voting data, for which MIT provides data from
-2000 to 2020 inclusive. Counties have no particular electoral
-significance, but they are a subdivision of a state whose boundaries
-rarely change (unlike congressional districts or voting precincts), and
-there are over 3000 of them in the US, which will give us a decent
-number of data points. Since elections of this type occur only once
-every 4 years, using states will likely give us too few data points.
+There are many choices to be made. The first thing to note is that
+elections are run by secret ballot, so we can't get individual-level
+data and must settle for aggregated results. I settled on county-level
+voting data. Counties have no particular electoral significance, but
+they are a subdivision of a state whose boundaries rarely change (unlike
+congressional districts or voting precincts), and there are over 3000 of
+them in the US, which will give us a decent number of data points. Since
+elections of this type occur only once every 4 years, using states will
+likely give us too few data points.
 <p>
 Counties have a great variation in size: Los Angeles County, CA has over
 10 million people, while Loving County, TX has under 100. Each county is
@@ -58,30 +46,24 @@ FIPS code</a>, widely used for geographic units. For example, Los
 Angeles County is 06037. The 06 is for California, and each county has a
 3-digit code.
 <p>
-Despite the overall high quality of the data, there are some issues. I
-need to let them know at MIT that some of the famous Bush-Gore Florida
-2000 results are wrong, for example, and I have not fixed them in my
-data. Preliminary exploratory analysis revealed some strange results,
-which I tracked down to the fact that some counties had changed names
-and FIPS codes. Also, there is something weird about Kansas City, which
-intersects several counties and has a strange FIPS code 2938000, so I
-deleted that data entirely for now. There are some strange codes from
-Alaska which may be historic and need fixing, but I have not yet
-explored all details.
-<p> The CSV is not in the tidy data format, but rather in "wide" format. For
-example, the first row looks like
+I first downloaded presidential election voting data  from the <a
+href="https://electionlab.mit.edu/data">MIT Elections Project</a> in
+order to save harvesting from 51 individual websites. Much further into
+the project, I found an amazing <a
+href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.
+7910/DVN/DGUMFI"> dataset</a> compiled by C. Algara and S. Amlani, which
+goes back much further in time, and appears to be of higher quality (for
+example, I need to let them know at MIT that some of the famous
+Bush-Gore Florida 2000 results are wrong, though these are the only
+errors I noticed). 
+<p>
+For polling data, I used individual years from Wikipedia and <a
+href="https://www.realclearpolling.com/polls/president/general/2020/
+trump-vs-biden">RealClearPolitics</a> to get either the final Gallup
+poll or the RCP polling average as late as possible before Election Day.
+These are national-level polls, as is common. For earlier years I used
+the actual election popular vote percentages taken from Wikipedia.
 
-<table>
-<tr> <td>2000</td> <td>ALABAMA</td>  <td>AL</td>  <td>AUTAUGA <td>1001</td>  <td>US</td> 
- <td>PRESIDENT </td> <td>AL GORE</td> <td>  DEMOCRAT</td> <td>  4942</td> 
- </tr>
- <tr>
- <td>2000</td> <td>ALABAMA</td>  <td>AL</td>  <td>AUTAUGA <td>1001</td>  <td>US</td> 
- <td>PRESIDENT </td> <td>GEORGE W. BUSH </td><td>REPUBLICAN </td> <td>11993</td>
- </tr>
- </table>
-while we really want a column for Democrat and another for Republican votes. This is 
-easily fixed via the tidyr function  pivot_wider.
 <hr>
 
 <h2> Exploring the data</h2>
@@ -89,35 +71,15 @@ easily fixed via the tidyr function  pivot_wider.
 You can explore the MIT Elections Lab data visually using 
 <a href="https://markcwilson.shinyapps.io/dataviz/" target="_blank">an
 RShiny app</a> I made (it takes 1-2 minutes to load, but then runs
-fine).
-<hr>
+fine). I will switch to the other dataset when I get time.
 
 For 2020, the smallest D vote share (30.9%) was in Roberts County TX,
 and the largest (apart from Washington DC which counts as a county for
 our purposes) was 89.3% in Prince George County MD, which borders
-Washington DC. Over all six elections in the dataset, the 5 counties
-with highest vote percentages for each of the three party categories are
-listed below. Note that there are more than two parties, and I lump all
-votes other than D or R into Other - the Other total is never enough to
-"win" any county, let alone any state, even if it represented a single
-party.
-<table>
-<tr> <td>DEMOCRAT</td><td>COUNTY </td><td>vote %</td>
-<td>REPUBLICAN</td><td>COUNTY </td><td>vote %</td>  
-<td>OTHER<td>COUNTY </td><td>vote %</td></tr> 
-<tr><td></td><td>11001</td><td> 0.905</td><td></td><td> 48269</td><td> 0.922</td><td></td><td> 48995</td><td> 0.0995</td></tr>
-<tr><td></td><td>46102</td><td> 0.880</td><td></td><td> 48393</td><td> 0.920</td><td></td><td> 49049</td><td> 0.0957</td></tr>
-<tr><td></td><td>24033</td><td> 0.868</td><td></td><td> 48393</td><td> 0.918</td><td></td><td> 38037</td><td> 0.0947</td></tr>
-<tr><td></td><td>36005</td><td> 0.861</td><td></td><td> 48357</td><td> 0.903</td><td></td><td> 2038 </td><td> 0.0925</td></tr>
-<tr><td></td><td>51730</td><td> 0.861</td><td></td><td> 48195</td><td> 0.894 </td><td></td><td>49011</td><td> 0.0921</td></tr>
-</table>
-
-I need to check out what FIPS code 2038 is - it looks like a special
-one, since all others are odd numbers and it does not appear in the list
-linked to above. Note that the 5 highest Republican vote shares overall
-are all in counties in Texas.
+Washington DC. The 5 highest Republican vote shares overall
+are all in counties in Texas. 
 <p>
-Now let's look at a choropleth map of 2020 election results by county
+Let's look at a choropleth map of 2020 election results by county
 (excluding Alaska and Hawaii). I found (can't recall where - apologies
 to the creator of this file) an existing geojson format file describing
 all the relevant geographical information and merged with the voting
@@ -133,27 +95,17 @@ reservation in South Dakota? - but the idea that there are "red" and
  
 <hr>
 
- <h2> Prediction</h2>
+<h2> Prediction</h2>
  
-Our goal is to predict the 2020 results as well as possible, at first
-using only historical voting data and the opinion poll average. We will
+Our goal is to predict the 2020 results as well as possible. We will
 predict vote share of D and R in each county. A zeroth-level step is to
-ignore polling data altogether. How well can we predict the 2020 results
-just from the elections in 2000-2016? The answer may be surprising for
-those more used to forecasting in other countries.
+try to predict the 2020 results just from the election results in
+2000-2016. The answer may be surprising for those more used to
+forecasting in other countries.
 <p>
-The correlation between D or R vote share in 2020 and in 2016 is 0.869.
-When we use a simple linear regression (pure lasso model) where
-2000-2016 is the training data  and 2020 is the test data, the results
-are pretty good: linear regression for D vote share (with the only
-predictors being the D and R vote shares in previous elections in that
-county) has RMSE 0.0384 and R^2 = 0.967, with slightly better results
-for the regression (RMSE 0.0251, R^2 = 0.969) for R vote share.
-<p>
-There is no reason to suspect that linear regression is the right tool
-here. However, training a random forest or XGBoost implementation in R
-on the same data yields only small improvements (RMSE still at least
-0.0217 in all cases).
+Using a standard linear regression to predict D vote share, where
+2000-2016 is the training data  and 2020 is the test data, 
+yields mean error in the 4-5 percentage point range and R^2 = 0.88.
 <p> 
 This level of error would be amazingly good for many applications.
 However, for election prediction, this is not so. The problem is that
@@ -171,64 +123,94 @@ each county. This obviously can't be correct in general (see <a
 href="https://journals.sagepub.com/doi/pdf/10.1177/09516298221123263?
 casa_token=2_nzwWr-l3MAAAAA:
 QeRch5_K2wStttMKY3VS42o3IkccU157ISQ64vQ_6BbToIkul59kHn8N7bltph6O0laYSpYe
-m-NC"> my paper with Bernie Grofman</a>) but seems fairly good in practice. In
-the paper we suggest a piecewise linear model, which treats positive and
-negative swings differently, and which has  better theoretical behavior.
-They give very similar results on this dataset (correlation of 0.995) so
-we use uniform swing only for simplicity. Simply using the county-level
-predictions derived from the swing model gives a correlation with the
-true 2020 result of 0.904. Training on all data 2000-2016 yields RMSE
-0.0269 and R^2 = 0.973 for D vote share with random forest, with larger
-RMSE (0.0335) for R vote share. It is fairly surprising that polling
-information gives so little improvement in the quality of prediction.
-There is much to think about.
+m-NC"> my paper with Bernie Grofman</a>) but seems fairly good in practice. 
+Initially, we will not impute any district-level swing, but simply use the 
+national swing as a predictor and see what happens.
+<p>
+The results are fairly impressive (remember these are results on the
+test set, not the training set): R^2 = 0.97 and mean error under 2
+percentage points. The residuals look good, with very few outliers.
+<p>
+I tried quadratic regression with various subsets of the predictors
+above, and nothing worked as well as the simple linear regression.
+I also looked at other methods such as RandomForest or XGBoost, and
+nothing did as well as linear regression. I did not yet spend time to
+tune the hyperparameters of the fancier models, but I seriously doubt
+they will outperform the current best. I suspect that better predictor
+variables are really what is needed.
+
+<hr>
+
+<h2> Adding demographic information </h2>
+
+Demographic information on factors such as age, sex, education level is
+known to have some predictive value, but not nearly enough on its own. Still,
+adding it in may be helpful. 
+<p>
+US Census data (decennial census and Annual Community Survey estimates)
+are useful, but difficult to access via the Census Department website. I
+downloaded from University of Minnesota <a
+href="https://www.ipums.org/">IPUMS</a>, for which site I am thankful.
+There is a huge variety of information, and as a start I stuck to age,
+sex, race, education, and personal income reported by county. The age
+data is quite detailed, roughly giving each 5-year interval from birth
+to age 85, so instead I downloaded the median age for male and female
+separately. Educational attainment has 3 levels (basically elementary,
+high school, college). I converted all numbers to proportions to
+normalize between 0 and 1. This is where I used SQL to extract what was
+needed for the basic analyses.
+<p>
+Interestingly, these demographic variables do not help. The fancier
+methods clearly outperform linear regression on this more complicated
+model, but nothing comes close to what we already had. Unsurprisingly,
+just using demographics instead of polling data works even worse. 
+<p>
+There are some interesting questions here, and I am sure it is possible
+to squeeze out slightly better predictions, but I doubt that going much
+below 2 percentage points error will happen anytime soon.
 
 <hr>
 
 <h2> State-level results </h2>
 
 Aggregating the county-level vote share predictions requires an idea of
-turnout (how many people voted in total). For now, we use the actual
-turnout in 2020, which of course we don't know when making a real
-prediction. Another option is to assume turnout percentages are constant
-over counties, and use county population data or data on registered
-voters. Finding county-level information on turnout will be harder, and
-will likely involved checking state by state - I have not yet found a
-curated source online. However, we know that at the state level, turnout
-can vary from under 50% in some states to more like 75% in others. I
-have no information yet on how it may vary inside a state. More
-sophisticated turnout models can also be tried, based on modeling, which
-will be a whole other project. There is plenty to do in future!
+turnout (how many people voted in total). Another option is to assume
+turnout percentages are constant over counties, and use county
+population data or data on registered voters. Finding county-level
+information on turnout will be harder, and will likely involved checking
+state by state - I have not yet found a curated source online. We know
+that at the state level, turnout can vary from under 50% in some states
+to more like 75% in others. I have no information yet on how it may vary
+across counties inside a state.
+
+For now, we use the actual turnout in 2020, which of course we don't
+know when making a real prediction.  More sophisticated turnout models
+can also be tried, based on modeling, which will be a whole other
+project. There is plenty to do in future!
 <p> 
-Using the actual turnout numbers, linear regression and XGBoost were
-correct on all states (plus DC) except Georgia and Florida (so predicted
-a bigger win to D than in fact occurred), while RF was wrong also on
-Pennsylvania. ******
+Using the actual turnout numbers, the predictions aggregate to state-level 
+predictions of the winning party that are correct except for a few swing states, as expected. 
+As mentioned, there is plenty of work to do!
 
 <hr>
 <h2> Possible improvements and extensions </h2>
 
-Some obvious ideas for refining the predictions:
+Some obvious ideas for refining the predictions, in descending order of 
+bang for buck, according to my best guess:
 <ul>
-<li> Improved polling data: more polls, so a trend might be apparent;
-different averaging and combining different aggregators; state-level
-polling for close states; prediction markets.
+<li> Improved polling data: more polls;
+different averaging and combining different aggregators; prediction markets.
+<li> Introduce a spatial component to the model (correlations between counties), and/or
+consider longer time lags (there is one short time series for each county).
+<li> Other demographic predictors: population density, religious affiliation, etc.
 <li> Tuning hyperparameters: I used RF and XGBoost "out of the box", with no
-attempt to find a better fit.
-<li> Add some variables for fundamentals, demographics, or opinion (e.g. ANES
-data).
+attempt yet to find a better fit.
 </ul>
 
 Some extensions:
 <ul>
 <li> Try the model on 2024 election data (when available) without/with
 further training.
- I tried this unsystematically and even on ANES data, when
-predicting an individual vote it seemed that only opinion seemed to have any serious
-influence on the respondent's recalled vote. But I have not seriously looked at 
-ethnic group, education, etc.
-<li> Incorporate other polling averages, such as prediction markets or other aggregators.
-<li> Probabilistic winner forecasts: randomizing over multiple runs.
 <li> Try the same general methodology to predict parliamentary elections in
 UK and Canada. 
 <li> Rather than prediction, look at counterfactuals: what happens under
@@ -236,8 +218,8 @@ different assumptions on swing or voter drift (which has applications to
 analysis of districting), or what would happen under vote-swapping
 between districts (which has applications to campaign strategy or
 demographic changes).
-
-<hr> Last update 2025-06-19.
+</ul>
+<hr> Last update 2025-06-21.
 
 </body>
 </html>

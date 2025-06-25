@@ -100,6 +100,12 @@ else if(m=="XG")
   set_engine("ranger") %>% 
   set_mode("regression")
   }
+  else if (m=="NN")
+  {
+  meth <- mlp() %>% 
+  set_engine("nnet") %>%
+  set_mode("regression")
+  }
   
 return(meth)
 }
